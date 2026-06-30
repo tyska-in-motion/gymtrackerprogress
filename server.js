@@ -29,8 +29,28 @@ function resolveFilePath(urlPath) {
   return join(publicDir, 'index.html');
 }
 
+function firebaseEnvScript() {
+  const keys = [
+    'VITE_FIREBASE_API_KEY',
+    'VITE_FIREBASE_AUTH_DOMAIN',
+    'VITE_FIREBASE_PROJECT_ID',
+    'VITE_FIREBASE_APP_ID',
+  ];
+  const config = Object.fromEntries(keys.map((key) => [key, process.env[key] || '']));
+
+  return `window.__ENV__ = ${JSON.stringify(config)};\n`;
+}
+
 const server = http.createServer((req, res) => {
   try {
+    const urlPath = (req.url || '/').split('?')[0];
+
+    if (urlPath === '/env-config.js') {
+      res.setHeader('Content-Type', contentTypes['.js']);
+      res.end(firebaseEnvScript());
+      return;
+    }
+
     const filePath = resolveFilePath(req.url || '/');
     const stream = createReadStream(filePath);
 
