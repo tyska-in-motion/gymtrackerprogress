@@ -19,13 +19,21 @@ W Render skonfiguruj zmienne środowiskowe:
 - `VITE_FIREBASE_PROJECT_ID`
 - `VITE_FIREBASE_APP_ID`
 
-Bez tych zmiennych aplikacja uruchamia tryb demo bez ekranu logowania, co ułatwia podgląd UI.
+Backend weryfikuje token Firebase ID przez Firebase Admin SDK dla każdego endpointu `/api/*`, a dane użytkownika zapisuje osobno pod jego `uid`.
+
+Dodatkowo skonfiguruj jedną ze zmiennych dla Firebase Admin SDK:
+
+- `GOOGLE_APPLICATION_CREDENTIALS` wskazujące plik JSON konta serwisowego, albo
+- `FIREBASE_SERVICE_ACCOUNT` z pełnym JSON konta serwisowego, albo
+- `FIREBASE_SERVICE_ACCOUNT_BASE64` z tym samym JSON zakodowanym base64.
+
+Bez zmiennych `VITE_FIREBASE_*` aplikacja uruchamia tryb demo tylko do podglądu UI. Chronione endpointy backendu wymagają poprawnej konfiguracji Firebase Admin SDK.
 
 ## Deploy na Render
 
-Utwórz **Static Site** z repozytorium i ustaw:
+Utwórz **Web Service** z repozytorium i ustaw:
 
-- Build Command: `npm run build`
-- Publish Directory: `dist`
+- Build Command: `npm install && npm run build`
+- Start Command: `npm start`
 
 Po pierwszym deployu dodaj domenę Render w Firebase Auth.
