@@ -171,6 +171,26 @@ async function handleApi(req, res) {
     return;
   }
 
+  if (urlPath.startsWith('/api/catalog/')) {
+    if (req.method === 'DELETE') {
+      const id = decodeURIComponent(urlPath.replace('/api/catalog/', '')).trim();
+      const catalog = readCatalog();
+      const nextCatalog = catalog.filter((exercise) => exercise.id !== id);
+
+      if (nextCatalog.length === catalog.length) {
+        sendJson(res, 404, { error: 'Nie znaleziono ćwiczenia.' });
+        return;
+      }
+
+      writeCatalog(nextCatalog);
+      sendJson(res, 200, { catalog: nextCatalog });
+      return;
+    }
+
+    sendJson(res, 405, { error: 'Method not allowed' });
+    return;
+  }
+
   const user = identifyUser(req, res);
   if (!user) return;
 
