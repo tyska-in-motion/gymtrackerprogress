@@ -1,6 +1,6 @@
 # Gym Progress
 
-Mobilna aplikacja JavaScript do śledzenia progresu na siłowni: logowanie Google, start treningu ze stoperem, rekordy, historia, plan tygodnia i profil.
+Mobilna aplikacja JavaScript do śledzenia progresu na siłowni: wybór osoby bez hasła, start treningu ze stoperem, rekordy, historia, plan tygodnia i profil.
 
 ## Uruchomienie lokalne
 
@@ -8,26 +8,11 @@ Mobilna aplikacja JavaScript do śledzenia progresu na siłowni: logowanie Googl
 npm run dev
 ```
 
-## Google login
+## Konta w aplikacji
 
-Aplikacja używa Firebase Authentication. Utwórz projekt Firebase, włącz provider **Google** i dodaj domenę aplikacji do Authorized domains.
+Aplikacja nie używa logowania Google ani haseł. Po wejściu pyta, kto teraz ćwiczy, pozwala wybrać istniejące konto albo stworzyć nowe konto dla kolejnej osoby.
 
-W Render skonfiguruj zmienne środowiskowe:
-
-- `VITE_FIREBASE_API_KEY`
-- `VITE_FIREBASE_AUTH_DOMAIN`
-- `VITE_FIREBASE_PROJECT_ID`
-- `VITE_FIREBASE_APP_ID`
-
-Backend weryfikuje token Firebase ID przez Firebase Admin SDK dla każdego endpointu `/api/*`, a dane użytkownika zapisuje osobno pod jego `uid`.
-
-Dodatkowo skonfiguruj jedną ze zmiennych dla Firebase Admin SDK:
-
-- `GOOGLE_APPLICATION_CREDENTIALS` wskazujące plik JSON konta serwisowego, albo
-- `FIREBASE_SERVICE_ACCOUNT` z pełnym JSON konta serwisowego, albo
-- `FIREBASE_SERVICE_ACCOUNT_BASE64` z tym samym JSON zakodowanym base64.
-
-Bez zmiennych `VITE_FIREBASE_*` aplikacja uruchamia tryb demo tylko do podglądu UI. Chronione endpointy backendu wymagają poprawnej konfiguracji Firebase Admin SDK.
+Każde konto ma osobny widok treningów, historii, planów i profilu. Lista kont jest zapisywana w przeglądarce, a dane treningowe są zapisywane przez backend w `data/users.json` pod technicznym identyfikatorem konta.
 
 ## Deploy na Render
 
@@ -35,5 +20,3 @@ Utwórz **Web Service** z repozytorium i ustaw:
 
 - Build Command: `npm install && npm run build`
 - Start Command: `npm start`
-
-Po pierwszym deployu dodaj domenę Render w Firebase Auth.

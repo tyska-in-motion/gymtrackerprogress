@@ -72,6 +72,54 @@ h2 {
   box-shadow: 0 16px 32px rgba(37, 99, 235, .28);
 }
 
+
+.account-list {
+  display: grid;
+  gap: 12px;
+  margin: 24px 0 4px;
+}
+
+.login button.account {
+  background: rgba(255, 255, 255, .94);
+  border: 1px solid rgba(148, 163, 184, .28);
+  color: #0f172a;
+  justify-content: flex-start;
+  margin: 0;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, .08);
+}
+
+.new-account {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.new-account input {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, .36);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .94);
+  color: #0f172a;
+  font: inherit;
+  font-size: 17px;
+  padding: 17px 18px;
+  outline: 0;
+}
+
+.new-account input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+}
+
+.login .new-account button { margin: 0; }
+
+.avatar.small {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  font-size: 18px;
+}
+
 .stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
