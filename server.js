@@ -1,4 +1,5 @@
 const http = require('node:http');
+const { createHash } = require('node:crypto');
 const { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } = require('node:fs');
 const { extname, join, normalize } = require('node:path');
 
@@ -7,6 +8,7 @@ const dataDir = join(__dirname, 'data');
 const dataFile = join(dataDir, 'users.json');
 const catalogFile = join(dataDir, 'catalog.json');
 const port = Number(process.env.PORT) || 3000;
+const accessPassword = process.env.GYM_ACCESS_PASSWORD || process.env.ACCESS_PASSWORD || process.env.APP_PASSWORD || '';
 const defaultCatalog = [
   { id: 'bench-press', name: 'Bench Press', category: 'Klatka piersiowa' },
   { id: 'squat', name: 'Squat', category: 'Nogi' },
@@ -44,6 +46,29 @@ function resolveFilePath(urlPath) {
 
 function envScript() {
   return 'window.__ENV__ = {};\n';
+}
+
+function authToken() {
+  return accessPassword ? createHash('sha256').update(`gym-progress:${accessPassword}`).digest('hex') : '';
+}
+
+function isAuthorized(req) {
+  const token = authToken();
+  return !!token && String(req.headers.cookie || '').split(';').some((part) => part.trim() === `gym_auth=${token}`);
+}
+
+function requireAuth(req, res) {
+  if (!accessPassword) {
+    sendJson(res, 500, { error: 'Hasło dostępu nie jest skonfigurowane na serwerze.' });
+    return false;
+  }
+
+  if (!isAuthorized(req)) {
+    sendJson(res, 401, { error: 'Wpisz hasło dostępu, aby kontynuować.' });
+    return false;
+  }
+
+  return true;
 }
 
 function sendJson(res, status, body) {
@@ -121,6 +146,34 @@ function emptyUserData() {
 async function handleApi(req, res) {
   const urlPath = (req.url || '/').split('?')[0];
 
+  if (urlPath === '/api/auth') {
+    if (req.method !== 'POST') {
+      sendJson(res, 405, { error: 'Method not allowed' });
+      return;
+    }
+
+    try {
+      const body = JSON.parse(await readRequestBody(req));
+      const password = String(body.password || '');
+
+      if (!accessPassword) {
+        sendJson(res, 500, { error: 'Hasło dostępu nie jest skonfigurowane na serwerze.' });
+        return;
+      }
+
+      if (password !== accessPassword) {
+        sendJson(res, 401, { error: 'Nieprawidłowe hasło.' });
+        return;
+      }
+
+      res.setHeader('Set-Cookie', `gym_auth=${authToken()}; Path=/; HttpOnly; SameSite=Lax`);
+      sendJson(res, 200, { ok: true });
+    } catch (error) {
+      sendJson(res, 400, { error: 'Invalid JSON payload' });
+    }
+    return;
+  }
+
   if (urlPath === '/api/catalog') {
     if (req.method === 'GET') {
       sendJson(res, 200, { catalog: readCatalog() });
@@ -128,6 +181,8 @@ async function handleApi(req, res) {
     }
 
     if (req.method === 'POST') {
+      if (!requireAuth(req, res)) return;
+
       try {
         const body = JSON.parse(await readRequestBody(req));
         const name = String(body.name || '').trim();
@@ -173,6 +228,8 @@ async function handleApi(req, res) {
 
   if (urlPath.startsWith('/api/catalog/')) {
     if (req.method === 'DELETE') {
+      if (!requireAuth(req, res)) return;
+
       const id = decodeURIComponent(urlPath.replace('/api/catalog/', '')).trim();
       const catalog = readCatalog();
       const nextCatalog = catalog.filter((exercise) => exercise.id !== id);
@@ -190,6 +247,8 @@ async function handleApi(req, res) {
     sendJson(res, 405, { error: 'Method not allowed' });
     return;
   }
+
+  if (!requireAuth(req, res)) return;
 
   const user = identifyUser(req, res);
   if (!user) return;
