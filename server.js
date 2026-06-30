@@ -5,7 +5,18 @@ const { extname, join, normalize } = require('node:path');
 const publicDir = join(__dirname, 'dist');
 const dataDir = join(__dirname, 'data');
 const dataFile = join(dataDir, 'users.json');
+const catalogFile = join(dataDir, 'catalog.json');
 const port = Number(process.env.PORT) || 3000;
+const defaultCatalog = [
+  { id: 'bench-press', name: 'Bench Press', category: 'Klatka piersiowa' },
+  { id: 'squat', name: 'Squat', category: 'Nogi' },
+  { id: 'deadlift', name: 'Deadlift', category: 'Plecy' },
+  { id: 'cable-row', name: 'Cable Row', category: 'Plecy' },
+  { id: 'push-up', name: 'Push-up', category: 'Klatka piersiowa' },
+  { id: 'dumbbell-fly', name: 'Dumbbell Fly', category: 'Klatka piersiowa' },
+  { id: 'hip-thrust', name: 'Hip Thrust', category: 'Pośladki' },
+  { id: 'shoulder-press', name: 'Shoulder Press', category: 'Barki' },
+];
 
 const contentTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -69,6 +80,7 @@ function identifyUser(req, res) {
 function ensureDataFile() {
   if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
   if (!existsSync(dataFile)) writeFileSync(dataFile, '{}\n');
+  if (!existsSync(catalogFile)) writeFileSync(catalogFile, `${JSON.stringify(defaultCatalog, null, 2)}\n`);
 }
 
 function readUsers() {
@@ -81,15 +93,86 @@ function writeUsers(users) {
   writeFileSync(dataFile, `${JSON.stringify(users, null, 2)}\n`);
 }
 
+function readCatalog() {
+  ensureDataFile();
+  const catalog = JSON.parse(readFileSync(catalogFile, 'utf8'));
+  return Array.isArray(catalog) ? catalog : defaultCatalog;
+}
+
+function writeCatalog(catalog) {
+  ensureDataFile();
+  writeFileSync(catalogFile, `${JSON.stringify(catalog, null, 2)}\n`);
+}
+
+function slug(value) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 48) || 'cwiczenie';
+}
+
 function emptyUserData() {
   return { workouts: [], plans: {}, draft: [] };
 }
 
 async function handleApi(req, res) {
+  const urlPath = (req.url || '/').split('?')[0];
+
+  if (urlPath === '/api/catalog') {
+    if (req.method === 'GET') {
+      sendJson(res, 200, { catalog: readCatalog() });
+      return;
+    }
+
+    if (req.method === 'POST') {
+      try {
+        const body = JSON.parse(await readRequestBody(req));
+        const name = String(body.name || '').trim();
+        const category = String(body.category || '').trim();
+
+        if (name.length < 2 || category.length < 2) {
+          sendJson(res, 400, { error: 'Podaj nazwę ćwiczenia i kategorię.' });
+          return;
+        }
+
+        const catalog = readCatalog();
+        const existing = catalog.find(
+          (exercise) => exercise.name.toLowerCase() === name.toLowerCase()
+            && exercise.category.toLowerCase() === category.toLowerCase(),
+        );
+
+        if (existing) {
+          sendJson(res, 200, { exercise: existing, catalog });
+          return;
+        }
+
+        const baseId = slug(`${name}-${category}`);
+        let id = baseId;
+        let counter = 2;
+        while (catalog.some((exercise) => exercise.id === id)) {
+          id = `${baseId}-${counter}`;
+          counter += 1;
+        }
+
+        const exercise = { id, name, category };
+        catalog.push(exercise);
+        writeCatalog(catalog);
+        sendJson(res, 201, { exercise, catalog });
+      } catch (error) {
+        sendJson(res, 400, { error: 'Invalid JSON payload' });
+      }
+      return;
+    }
+
+    sendJson(res, 405, { error: 'Method not allowed' });
+    return;
+  }
+
   const user = identifyUser(req, res);
   if (!user) return;
-
-  const urlPath = (req.url || '/').split('?')[0];
 
   if (urlPath !== '/api/data') {
     sendJson(res, 404, { error: 'Not found' });

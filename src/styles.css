@@ -6,6 +6,8 @@
 
 * { box-sizing: border-box; }
 
+.icon-sprite { display: none; }
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -240,6 +242,70 @@ h2 {
   font-size: 16px;
 }
 
+.exercise-form,
+.picker-label {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.exercise-form {
+  border: 1px solid rgba(96, 165, 250, .34);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(239, 246, 255, .92), rgba(255, 255, 255, .92));
+  padding: 16px;
+}
+
+.exercise-form label,
+.picker-label {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+
+.exercise-form input,
+.picker-label select {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, .36);
+  border-radius: 16px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 7px;
+  padding: 13px 14px;
+  outline: 0;
+}
+
+.exercise-form input:focus,
+.picker-label select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+}
+
+.exercise-form button {
+  border: 0;
+  border-radius: 18px;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 900;
+  padding: 14px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+  margin: 0 0 0 8px;
+  padding: 5px 9px;
+}
+
 .week {
   display: grid;
   grid-template-columns: 50px 1fr 50px;
@@ -322,6 +388,17 @@ nav button {
 }
 
 nav .on { color: #2563eb; }
+
+.nav-icon {
+  width: 27px;
+  height: 27px;
+  fill: currentColor;
+  filter: drop-shadow(0 6px 10px rgba(37, 99, 235, .14));
+}
+
+nav small {
+  margin-top: 3px;
+}
 
 .login {
   min-height: calc(100vh - 68px);
