@@ -498,3 +498,62 @@ nav small {
   padding: 9px 10px;
   white-space: nowrap;
 }
+
+.exercise-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.mini.danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.mini.done {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.exercise-block.completed {
+  border-left-color: #22c55e;
+  background: rgba(240, 253, 244, .92);
+}
+
+.exercise-block.completed b {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgba(21, 128, 61, .45);
+}
+
+.rest-panel {
+  align-items: center;
+  background: #0f172a;
+  border-radius: 22px;
+  color: #dbeafe;
+  display: flex;
+  justify-content: space-between;
+  margin: 18px 0 12px;
+  padding: 16px 18px;
+}
+
+.rest-panel span {
+  font-size: 13px;
+  font-weight: 800;
+  max-width: 220px;
+}
+
+.rest-panel b {
+  color: #fff;
+  font-size: 26px;
+}
+
+.catalog-list {
+  margin-top: 30px;
+}
+
+.catalog-item span span {
+  color: #64748b;
+  font-size: 13px;
+}
