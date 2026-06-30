@@ -4,8 +4,5 @@
     "dev": "npm run build && node server.js",
     "start": "node server.js"
   },
-  "devDependencies": {},
-  "dependencies": {
-    "firebase-admin": "^12.7.0"
-  }
+  "devDependencies": {}
 }

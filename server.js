@@ -1,7 +1,6 @@
 const http = require('node:http');
 const { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } = require('node:fs');
 const { extname, join, normalize } = require('node:path');
-const admin = require('firebase-admin');
 
 const publicDir = join(__dirname, 'dist');
 const dataDir = join(__dirname, 'data');
@@ -20,25 +19,6 @@ const contentTypes = {
   '.ico': 'image/x-icon',
 };
 
-function firebaseCredential() {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-    const json = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
-    return admin.credential.cert(JSON.parse(json));
-  }
-
-  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    return admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT));
-  }
-
-  return admin.credential.applicationDefault();
-}
-
-function initializeFirebaseAdmin() {
-  if (admin.apps.length) return true;
-  admin.initializeApp({ credential: firebaseCredential() });
-  return true;
-}
-
 function resolveFilePath(urlPath) {
   const decodedPath = decodeURIComponent(urlPath.split('?')[0]);
   const safePath = normalize(decodedPath).replace(/^(\.\.(\/|\\|$))+/, '');
@@ -51,16 +31,8 @@ function resolveFilePath(urlPath) {
   return join(publicDir, 'index.html');
 }
 
-function firebaseEnvScript() {
-  const keys = [
-    'VITE_FIREBASE_API_KEY',
-    'VITE_FIREBASE_AUTH_DOMAIN',
-    'VITE_FIREBASE_PROJECT_ID',
-    'VITE_FIREBASE_APP_ID',
-  ];
-  const config = Object.fromEntries(keys.map((key) => [key, process.env[key] || '']));
-
-  return `window.__ENV__ = ${JSON.stringify(config)};\n`;
+function envScript() {
+  return 'window.__ENV__ = {};\n';
 }
 
 function sendJson(res, status, body) {
@@ -83,23 +55,15 @@ function readRequestBody(req) {
   });
 }
 
-async function authenticate(req, res) {
-  const header = req.headers.authorization || '';
-  const match = header.match(/^Bearer (.+)$/);
+function identifyUser(req, res) {
+  const uid = String(req.headers['x-user-id'] || '').trim();
 
-  if (!match) {
-    sendJson(res, 401, { error: 'Missing Firebase ID token' });
+  if (!uid || !/^[a-zA-Z0-9_-]{3,80}$/.test(uid)) {
+    sendJson(res, 400, { error: 'Missing or invalid X-User-Id header' });
     return null;
   }
 
-  try {
-    initializeFirebaseAdmin();
-    const decodedToken = await admin.auth().verifyIdToken(match[1]);
-    return { uid: decodedToken.uid, email: decodedToken.email || '', name: decodedToken.name || '' };
-  } catch (error) {
-    sendJson(res, 401, { error: 'Invalid Firebase ID token' });
-    return null;
-  }
+  return { uid };
 }
 
 function ensureDataFile() {
@@ -122,7 +86,7 @@ function emptyUserData() {
 }
 
 async function handleApi(req, res) {
-  const user = await authenticate(req, res);
+  const user = identifyUser(req, res);
   if (!user) return;
 
   const urlPath = (req.url || '/').split('?')[0];
@@ -169,7 +133,7 @@ const server = http.createServer((req, res) => {
   try {
     if (urlPath === '/env-config.js') {
       res.setHeader('Content-Type', contentTypes['.js']);
-      res.end(firebaseEnvScript());
+      res.end(envScript());
       return;
     }
 
