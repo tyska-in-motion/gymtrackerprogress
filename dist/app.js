@@ -6,7 +6,6 @@ const firebaseConfig = { apiKey: env.VITE_FIREBASE_API_KEY, authDomain: env.VITE
 const auth = Object.values(firebaseConfig).every(Boolean) ? getAuth(initializeApp(firebaseConfig)) : null;
 const $ = (s) => document.querySelector(s);
 const root = $('#root');
-let user = null, tab = 'home', planning = false, data = load('demo'), startedAt = 0, timer = null;
 const demoUser = { displayName: 'Martyna', email: 'martynacookidooo@gmail.com', uid: 'demo' };
 const initialWorkouts = [
  {id:1,name:'Mój trening',date:'2026-06-30',duration:23,exercises:[ex('Bench Press',10,15),ex('Deadlift',10,15),ex('Squat',40,50)]},
@@ -15,6 +14,7 @@ const initialWorkouts = [
  {id:4,name:'Akcesoria',date:'2026-06-26',duration:31,exercises:[ex('Dumbbell Fly',10,10)]}
 ];
 const exerciseNames = ['Bench Press','Squat','Deadlift','Cable Row','Push-up','Dumbbell Fly','Hip Thrust','Shoulder Press'];
+let user = null, tab = 'home', planning = false, data = load('demo'), startedAt = 0, timer = null;
 function ex(name, kg, reps){return {name,sets:[{kg,reps}]};}
 function load(id){const raw=localStorage.getItem(`gym-progress:${id}`);return raw?JSON.parse(raw):{workouts:initialWorkouts,plans:{},draft:[]};}
 function save(){localStorage.setItem(`gym-progress:${user?.uid||'demo'}`,JSON.stringify(data));}
