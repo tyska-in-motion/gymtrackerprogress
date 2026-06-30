@@ -450,3 +450,51 @@ nav small {
   .phone { min-height: 860px; height: 860px; border-radius: 34px; }
   .screen { min-height: 860px; height: 860px; }
 }
+
+.workout-name {
+  display: grid;
+  gap: 8px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .02em;
+  margin-bottom: 14px;
+}
+
+.workout-name input {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, .36);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .94);
+  color: #0f172a;
+  font: inherit;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -.04em;
+  padding: 15px 16px;
+  outline: 0;
+}
+
+.workout-name input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+}
+
+.exercise-block {
+  border-left: 5px solid #60a5fa;
+}
+
+.exercise-title {
+  align-items: flex-start;
+}
+
+.mini {
+  border: 0;
+  border-radius: 14px;
+  background: #e0edff;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 9px 10px;
+  white-space: nowrap;
+}

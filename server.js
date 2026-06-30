@@ -115,7 +115,7 @@ function slug(value) {
 }
 
 function emptyUserData() {
-  return { workouts: [], plans: {}, draft: [] };
+  return { workouts: [], plans: {}, draft: [], templates: [] };
 }
 
 async function handleApi(req, res) {
@@ -193,6 +193,7 @@ async function handleApi(req, res) {
         workouts: Array.isArray(body.workouts) ? body.workouts : [],
         plans: body.plans && typeof body.plans === 'object' && !Array.isArray(body.plans) ? body.plans : {},
         draft: Array.isArray(body.draft) ? body.draft : [],
+        templates: Array.isArray(body.templates) ? body.templates : [],
       };
       writeUsers(users);
       sendJson(res, 200, { uid: user.uid, data: users[user.uid] });
