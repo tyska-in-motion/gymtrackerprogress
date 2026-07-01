@@ -749,3 +749,37 @@ nav small {
   font-size: 15px;
   margin: 8px 0;
 }
+
+.record-card > span {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.record-card .badge {
+  margin-left: 0;
+}
+
+.workout-card-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.delete-workout {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--md-error-container);
+  color: var(--md-error);
+  display: grid;
+  flex: 0 0 auto;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+  place-items: center;
+  padding: 0;
+}
