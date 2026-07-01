@@ -454,13 +454,25 @@ nav small {
   max-width: 330px;
 }
 
+.error,
+.success {
+  border-radius: 18px;
+  padding: 12px;
+  line-height: 1.4;
+}
+
 .error {
   background: var(--md-error-container);
   border: 1px solid #f2b8b5;
-  border-radius: 18px;
   color: var(--md-error);
-  padding: 12px;
-  line-height: 1.4;
+}
+
+.success {
+  background: var(--md-success-container);
+  border: 1px solid rgba(20, 108, 46, .28);
+  color: var(--md-success);
+  font-weight: 700;
+  margin: 8px 0 14px;
 }
 
 @media (min-width: 700px) {
@@ -956,6 +968,16 @@ nav small {
   margin: 0;
 }
 
+.workout-edit-tools {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.workout-edit-tools .workout-name input {
+  font-size: 20px;
+  min-width: 0;
+  padding: 13px 12px;
+}
+
 .compact-save {
   align-self: end;
   min-height: 48px;
@@ -975,6 +997,10 @@ nav small {
 @media (max-width: 420px) {
   .workout-tools {
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .workout-edit-tools {
+    grid-template-columns: 1fr;
   }
 
   .compact-save {
