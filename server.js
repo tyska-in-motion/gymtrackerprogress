@@ -10,7 +10,20 @@ const accountsFile = join(dataDir, 'accounts.json');
 const catalogFile = join(dataDir, 'catalog.json');
 const port = Number(process.env.PORT) || 3000;
 const accessPassword = process.env.GYM_ACCESS_PASSWORD || process.env.ACCESS_PASSWORD || process.env.APP_PASSWORD || '';
-const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || '';
+
+const databaseEnvNames = [
+  'DATABASE_URL',
+  'POSTGRES_URL',
+  'DATABASE_INTERNAL_URL',
+  'POSTGRES_INTERNAL_URL',
+  'POSTGRES_PRISMA_URL',
+  'POSTGRES_URL_NON_POOLING',
+];
+const databaseCandidates = databaseEnvNames
+  .map((name) => ({ name, url: String(process.env[name] || '').trim() }))
+  .filter(({ url }, index, values) => url && values.findIndex((candidate) => candidate.url === url) === index);
+const hasDatabaseConfig = databaseCandidates.length > 0;
+
 const defaultCatalog = [
   { id: 'bench-press', name: 'Bench Press', category: 'Klatka piersiowa' },
   { id: 'squat', name: 'Squat', category: 'Nogi' },
@@ -47,7 +60,7 @@ function resolveFilePath(urlPath) {
 }
 
 function envScript() {
-  return `window.__ENV__ = { storage: ${JSON.stringify(databaseUrl ? 'postgresql' : 'json-file')} };\n`;
+  return `window.__ENV__ = { storage: ${JSON.stringify(hasDatabaseConfig ? 'postgresql' : 'json-file')} };\n`;
 }
 
 function authToken() {
@@ -140,9 +153,31 @@ const fileStore = {
   },
 };
 
-const { Client } = databaseUrl ? require('pg') : { Client: null };
-const pgClient = databaseUrl ? new Client({ connectionString: databaseUrl, ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false } }) : null;
+const { Client } = hasDatabaseConfig ? require('pg') : { Client: null };
+let pgClient = null;
 let pgReady;
+
+function postgresSslConfig() {
+  return process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false };
+}
+
+function maskDatabaseUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.password) url.password = '***';
+    return url.toString();
+  } catch (error) {
+    return '<invalid PostgreSQL URL>';
+  }
+}
+
+function postgresAuthError(error) {
+  return error && (error.code === '28P01' || /password authentication failed/i.test(error.message || ''));
+}
+
+function postgresConfigError(error) {
+  return error && error.code === 'POSTGRES_CONFIG_ERROR';
+}
 
 function normalizeUserData(value) {
   const body = value && typeof value === 'object' ? value : {};
@@ -154,9 +189,40 @@ function normalizeUserData(value) {
   };
 }
 
+async function connectPostgres() {
+  if (!hasDatabaseConfig) return null;
+
+  let lastError;
+  for (const candidate of databaseCandidates) {
+    const client = new Client({ connectionString: candidate.url, ssl: postgresSslConfig() });
+    try {
+      await client.connect();
+      pgClient = client;
+      console.log(`Connected to PostgreSQL using ${candidate.name}: ${maskDatabaseUrl(candidate.url)}`);
+      return client;
+    } catch (error) {
+      lastError = error;
+      console.error(`Could not connect to PostgreSQL using ${candidate.name}: ${error.message}`);
+      try {
+        await client.end();
+      } catch (endError) {
+        // Ignore cleanup errors after failed connection attempts.
+      }
+      if (!postgresAuthError(error)) break;
+    }
+  }
+
+  const error = new Error(
+    `Nie można połączyć się z PostgreSQL. Sprawdź zmienną DATABASE_URL w Renderze i wklej pełny Internal Database URL z poprawnym hasłem. Ostatni błąd: ${lastError ? lastError.message : 'brak konfiguracji'}`,
+  );
+  error.code = 'POSTGRES_CONFIG_ERROR';
+  error.cause = lastError;
+  throw error;
+}
+
 async function initPostgres() {
-  if (!pgClient) return;
-  await pgClient.connect();
+  if (!hasDatabaseConfig) return;
+  await connectPostgres();
   await pgClient.query(`
     CREATE TABLE IF NOT EXISTS accounts (
       id TEXT PRIMARY KEY,
@@ -260,7 +326,7 @@ const postgresStore = {
   },
 };
 
-const store = pgClient ? postgresStore : fileStore;
+const store = hasDatabaseConfig ? postgresStore : fileStore;
 
 function slug(value) {
   return value
@@ -463,6 +529,10 @@ const server = http.createServer((req, res) => {
   if (urlPath.startsWith('/api/')) {
     handleApi(req, res).catch((error) => {
       console.error(error);
+      if (postgresConfigError(error)) {
+        sendJson(res, 503, { error: error.message });
+        return;
+      }
       sendJson(res, 500, { error: 'Internal Server Error' });
     });
     return;
