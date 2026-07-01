@@ -936,3 +936,42 @@ nav small {
 .templates-open {
   margin-top: 0;
 }
+
+.workout-tools {
+  align-items: end;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin: 12px 0 8px;
+}
+
+.workout-tools .workout-name {
+  margin: 0;
+}
+
+.compact-save {
+  align-self: end;
+  min-height: 48px;
+  padding-inline: 14px;
+  width: auto;
+}
+
+.mini.icon-only {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 38px;
+  min-width: 38px;
+  padding: 9px;
+}
+
+@media (max-width: 420px) {
+  .workout-tools {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .compact-save {
+    font-size: 13px;
+    padding-inline: 12px;
+  }
+}
