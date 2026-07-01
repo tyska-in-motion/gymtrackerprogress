@@ -6,6 +6,7 @@ const { extname, join, normalize } = require('node:path');
 const publicDir = join(__dirname, 'dist');
 const dataDir = join(__dirname, 'data');
 const dataFile = join(dataDir, 'users.json');
+const accountsFile = join(dataDir, 'accounts.json');
 const catalogFile = join(dataDir, 'catalog.json');
 const port = Number(process.env.PORT) || 3000;
 const accessPassword = process.env.GYM_ACCESS_PASSWORD || process.env.ACCESS_PASSWORD || process.env.APP_PASSWORD || '';
@@ -105,6 +106,7 @@ function identifyUser(req, res) {
 function ensureDataFile() {
   if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
   if (!existsSync(dataFile)) writeFileSync(dataFile, '{}\n');
+  if (!existsSync(accountsFile)) writeFileSync(accountsFile, '[]\n');
   if (!existsSync(catalogFile)) writeFileSync(catalogFile, `${JSON.stringify(defaultCatalog, null, 2)}\n`);
 }
 
@@ -116,6 +118,17 @@ function readUsers() {
 function writeUsers(users) {
   ensureDataFile();
   writeFileSync(dataFile, `${JSON.stringify(users, null, 2)}\n`);
+}
+
+function readAccounts() {
+  ensureDataFile();
+  const accounts = JSON.parse(readFileSync(accountsFile, 'utf8'));
+  return Array.isArray(accounts) ? accounts : [];
+}
+
+function writeAccounts(accounts) {
+  ensureDataFile();
+  writeFileSync(accountsFile, `${JSON.stringify(accounts, null, 2)}\n`);
 }
 
 function readCatalog() {
@@ -171,6 +184,45 @@ async function handleApi(req, res) {
     } catch (error) {
       sendJson(res, 400, { error: 'Invalid JSON payload' });
     }
+    return;
+  }
+
+
+  if (urlPath === '/api/accounts') {
+    if (req.method === 'GET') {
+      sendJson(res, 200, { accounts: readAccounts() });
+      return;
+    }
+
+    if (req.method === 'POST') {
+      if (!requireAuth(req, res)) return;
+
+      try {
+        const body = JSON.parse(await readRequestBody(req));
+        const id = String(body.id || '').trim();
+        const name = String(body.name || '').trim();
+
+        if (!/^[a-zA-Z0-9_-]{3,80}$/.test(id) || name.length < 1 || name.length > 80) {
+          sendJson(res, 400, { error: 'Nieprawidłowe dane konta.' });
+          return;
+        }
+
+        const accounts = readAccounts();
+        const existing = accounts.find((account) => account.id === id);
+
+        if (!existing) {
+          accounts.push({ id, name });
+          writeAccounts(accounts);
+        }
+
+        sendJson(res, existing ? 200 : 201, { account: existing || { id, name }, accounts: readAccounts() });
+      } catch (error) {
+        sendJson(res, 400, { error: 'Invalid JSON payload' });
+      }
+      return;
+    }
+
+    sendJson(res, 405, { error: 'Method not allowed' });
     return;
   }
 
