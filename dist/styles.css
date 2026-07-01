@@ -840,6 +840,13 @@ nav small {
   margin-top: 5px;
 }
 
+.planned-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .planned-template {
   background: var(--md-primary-container);
   border-color: rgba(103, 80, 164, .32);
