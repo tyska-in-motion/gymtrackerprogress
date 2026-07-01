@@ -636,3 +636,98 @@ nav small {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+
+.workout-card {
+  overflow: hidden;
+}
+
+.workout-summary {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+  text-align: left;
+}
+
+.workout-summary small {
+  color: #64748b;
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.chevron {
+  width: 34px;
+  height: 34px;
+  border-radius: 13px;
+  background: #e0edff;
+  color: #2563eb;
+  display: grid;
+  flex: 0 0 auto;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  place-items: center;
+}
+
+.workout-details {
+  border-top: 1px solid #dbeafe;
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+}
+
+.history-exercise {
+  border-radius: 18px;
+  background: #f8fbff;
+  border: 1px solid rgba(148, 163, 184, .22);
+  padding: 14px;
+}
+
+.history-exercise > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.history-exercise > div span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.history-exercise ol {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.history-exercise li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.history-exercise li strong {
+  color: #0f172a;
+  font-size: 15px;
+  text-align: right;
+}
+
+.empty.compact {
+  font-size: 15px;
+  margin: 8px 0;
+}
