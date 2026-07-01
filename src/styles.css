@@ -904,3 +904,35 @@ nav small {
   gap: 8px;
   justify-content: flex-end;
 }
+
+.drag-handle {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--md-surface-container-high);
+  color: var(--md-primary);
+  flex: 0 0 auto;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  touch-action: none;
+}
+
+.exercise-block {
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.exercise-block.dragging {
+  opacity: .72;
+  transform: scale(.99);
+}
+
+.exercise-block.drag-over {
+  border-color: var(--md-primary);
+  box-shadow: 0 0 0 4px rgba(103, 80, 164, .16), 0 10px 24px rgba(29, 27, 32, .12);
+}
+
+.templates-open {
+  margin-top: 0;
+}
