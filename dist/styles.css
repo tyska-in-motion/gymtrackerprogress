@@ -283,6 +283,7 @@ h2 {
 }
 
 .exercise-form input,
+.picker-label input,
 .picker-label select {
   width: 100%;
   border: 1px solid rgba(121, 116, 126, .45);
@@ -298,6 +299,7 @@ h2 {
 }
 
 .exercise-form input:focus,
+.picker-label input:focus,
 .picker-label select:focus {
   border-color: var(--md-primary);
   box-shadow: 0 0 0 4px rgba(103, 80, 164, .16);
@@ -545,6 +547,33 @@ nav small {
   background: var(--md-success-container);
   color: var(--md-success);
 }
+
+
+.completion-circle {
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--md-outline);
+  border-radius: 999px;
+  background: var(--md-surface);
+  color: var(--md-success);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.completion-circle.done {
+  border-color: var(--md-success);
+  background: var(--md-success-container);
+}
+
+.completion-circle span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.history-filter { margin-bottom: 10px; }
+.clear-history-filter { width: 100%; margin: 0 0 10px; }
 
 .exercise-block.completed {
   border-left-color: var(--md-success);
