@@ -851,3 +851,56 @@ nav small {
   background: var(--md-primary-container);
   border-color: rgba(103, 80, 164, .32);
 }
+
+.template-library {
+  margin-top: 28px;
+}
+
+.template-library h2 {
+  margin-top: 0;
+}
+
+.template-card {
+  display: grid;
+  gap: 14px;
+}
+
+.template-card small {
+  color: var(--md-muted);
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+.template-card ul {
+  border-top: 1px solid var(--md-primary-container);
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 14px 0 0;
+}
+
+.template-card li {
+  align-items: center;
+  color: var(--md-text);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.template-card li em {
+  color: var(--md-muted);
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.template-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
