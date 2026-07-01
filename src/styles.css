@@ -783,3 +783,64 @@ nav small {
   place-items: center;
   padding: 0;
 }
+
+.days button span,
+.days button b {
+  display: block;
+}
+
+.days button b {
+  color: inherit;
+  font-size: 19px;
+  margin-top: 4px;
+}
+
+.selected-day {
+  border: 1px solid rgba(103, 80, 164, .18);
+  border-radius: 28px;
+  background: var(--md-surface-container);
+  margin-top: 22px;
+  padding: 18px;
+}
+
+.selected-day .eyebrow {
+  margin: 0 0 8px;
+}
+
+.selected-day h2 {
+  margin: 0 0 14px;
+}
+
+.plan-section h3 {
+  font-size: 16px;
+  margin: 18px 0 10px;
+}
+
+.plan-workout,
+.planned-template {
+  width: 100%;
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+
+.plan-workout {
+  border: 1px solid rgba(202, 196, 208, .72);
+  color: inherit;
+}
+
+.plan-workout small,
+.planned-template small {
+  color: var(--md-muted);
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+.planned-template {
+  background: var(--md-primary-container);
+  border-color: rgba(103, 80, 164, .32);
+}
