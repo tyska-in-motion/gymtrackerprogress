@@ -10,6 +10,7 @@ const accountsFile = join(dataDir, 'accounts.json');
 const catalogFile = join(dataDir, 'catalog.json');
 const port = Number(process.env.PORT) || 3000;
 const accessPassword = process.env.GYM_ACCESS_PASSWORD || process.env.ACCESS_PASSWORD || process.env.APP_PASSWORD || '';
+const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || '';
 const defaultCatalog = [
   { id: 'bench-press', name: 'Bench Press', category: 'Klatka piersiowa' },
   { id: 'squat', name: 'Squat', category: 'Nogi' },
@@ -46,7 +47,7 @@ function resolveFilePath(urlPath) {
 }
 
 function envScript() {
-  return 'window.__ENV__ = {};\n';
+  return `window.__ENV__ = { storage: ${JSON.stringify(databaseUrl ? 'postgresql' : 'json-file')} };\n`;
 }
 
 function authToken() {
@@ -110,37 +111,156 @@ function ensureDataFile() {
   if (!existsSync(catalogFile)) writeFileSync(catalogFile, `${JSON.stringify(defaultCatalog, null, 2)}\n`);
 }
 
-function readUsers() {
-  ensureDataFile();
-  return JSON.parse(readFileSync(dataFile, 'utf8'));
+const fileStore = {
+  async readUsers() {
+    ensureDataFile();
+    return JSON.parse(readFileSync(dataFile, 'utf8'));
+  },
+  async writeUsers(users) {
+    ensureDataFile();
+    writeFileSync(dataFile, `${JSON.stringify(users, null, 2)}\n`);
+  },
+  async readAccounts() {
+    ensureDataFile();
+    const accounts = JSON.parse(readFileSync(accountsFile, 'utf8'));
+    return Array.isArray(accounts) ? accounts : [];
+  },
+  async writeAccounts(accounts) {
+    ensureDataFile();
+    writeFileSync(accountsFile, `${JSON.stringify(accounts, null, 2)}\n`);
+  },
+  async readCatalog() {
+    ensureDataFile();
+    const catalog = JSON.parse(readFileSync(catalogFile, 'utf8'));
+    return Array.isArray(catalog) ? catalog : defaultCatalog;
+  },
+  async writeCatalog(catalog) {
+    ensureDataFile();
+    writeFileSync(catalogFile, `${JSON.stringify(catalog, null, 2)}\n`);
+  },
+};
+
+const { Client } = databaseUrl ? require('pg') : { Client: null };
+const pgClient = databaseUrl ? new Client({ connectionString: databaseUrl, ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false } }) : null;
+let pgReady;
+
+function normalizeUserData(value) {
+  const body = value && typeof value === 'object' ? value : {};
+  return {
+    workouts: Array.isArray(body.workouts) ? body.workouts : [],
+    plans: body.plans && typeof body.plans === 'object' && !Array.isArray(body.plans) ? body.plans : {},
+    draft: Array.isArray(body.draft) ? body.draft : [],
+    templates: Array.isArray(body.templates) ? body.templates : [],
+  };
 }
 
-function writeUsers(users) {
-  ensureDataFile();
-  writeFileSync(dataFile, `${JSON.stringify(users, null, 2)}\n`);
+async function initPostgres() {
+  if (!pgClient) return;
+  await pgClient.connect();
+  await pgClient.query(`
+    CREATE TABLE IF NOT EXISTS accounts (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL CHECK (char_length(name) BETWEEN 1 AND 80),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE TABLE IF NOT EXISTS user_data (
+      uid TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+      data JSONB NOT NULL DEFAULT '{"workouts":[],"plans":{},"draft":[],"templates":[]}'::jsonb,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE TABLE IF NOT EXISTS catalog_exercises (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS catalog_exercises_name_category_idx
+      ON catalog_exercises (lower(name), lower(category));
+  `);
+
+  for (const exercise of defaultCatalog) {
+    await pgClient.query(
+      'INSERT INTO catalog_exercises (id, name, category) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING',
+      [exercise.id, exercise.name, exercise.category],
+    );
+  }
 }
 
-function readAccounts() {
-  ensureDataFile();
-  const accounts = JSON.parse(readFileSync(accountsFile, 'utf8'));
-  return Array.isArray(accounts) ? accounts : [];
+async function ensurePostgres() {
+  if (!pgReady) pgReady = initPostgres();
+  await pgReady;
 }
 
-function writeAccounts(accounts) {
-  ensureDataFile();
-  writeFileSync(accountsFile, `${JSON.stringify(accounts, null, 2)}\n`);
-}
+const postgresStore = {
+  async readUsers() {
+    await ensurePostgres();
+    const result = await pgClient.query('SELECT uid, data FROM user_data ORDER BY uid');
+    return Object.fromEntries(result.rows.map((row) => [row.uid, normalizeUserData(row.data)]));
+  },
+  async writeUsers(users) {
+    await ensurePostgres();
+    await pgClient.query('BEGIN');
+    try {
+      for (const [uid, value] of Object.entries(users)) {
+        await pgClient.query(
+          `INSERT INTO user_data (uid, data, updated_at)
+           VALUES ($1, $2::jsonb, now())
+           ON CONFLICT (uid) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
+          [uid, JSON.stringify(normalizeUserData(value))],
+        );
+      }
+      await pgClient.query('COMMIT');
+    } catch (error) {
+      await pgClient.query('ROLLBACK');
+      throw error;
+    }
+  },
+  async readAccounts() {
+    await ensurePostgres();
+    const result = await pgClient.query('SELECT id, name FROM accounts ORDER BY created_at, name');
+    return result.rows;
+  },
+  async writeAccounts(accounts) {
+    await ensurePostgres();
+    for (const account of accounts) {
+      await pgClient.query(
+        'INSERT INTO accounts (id, name) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name',
+        [account.id, account.name],
+      );
+      await pgClient.query(
+        `INSERT INTO user_data (uid, data) VALUES ($1, $2::jsonb) ON CONFLICT (uid) DO NOTHING`,
+        [account.id, JSON.stringify(emptyUserData())],
+      );
+    }
+  },
+  async readCatalog() {
+    await ensurePostgres();
+    const result = await pgClient.query('SELECT id, name, category FROM catalog_exercises ORDER BY category, name');
+    return result.rows.length ? result.rows : defaultCatalog;
+  },
+  async writeCatalog(catalog) {
+    await ensurePostgres();
+    await pgClient.query('BEGIN');
+    try {
+      await pgClient.query('DELETE FROM catalog_exercises');
+      for (const exercise of catalog) {
+        await pgClient.query(
+          'INSERT INTO catalog_exercises (id, name, category) VALUES ($1, $2, $3)',
+          [exercise.id, exercise.name, exercise.category],
+        );
+      }
+      await pgClient.query('COMMIT');
+    } catch (error) {
+      await pgClient.query('ROLLBACK');
+      throw error;
+    }
+  },
+};
 
-function readCatalog() {
-  ensureDataFile();
-  const catalog = JSON.parse(readFileSync(catalogFile, 'utf8'));
-  return Array.isArray(catalog) ? catalog : defaultCatalog;
-}
-
-function writeCatalog(catalog) {
-  ensureDataFile();
-  writeFileSync(catalogFile, `${JSON.stringify(catalog, null, 2)}\n`);
-}
+const store = pgClient ? postgresStore : fileStore;
 
 function slug(value) {
   return value
@@ -190,7 +310,7 @@ async function handleApi(req, res) {
 
   if (urlPath === '/api/accounts') {
     if (req.method === 'GET') {
-      sendJson(res, 200, { accounts: readAccounts() });
+      sendJson(res, 200, { accounts: await store.readAccounts() });
       return;
     }
 
@@ -207,15 +327,15 @@ async function handleApi(req, res) {
           return;
         }
 
-        const accounts = readAccounts();
+        const accounts = await store.readAccounts();
         const existing = accounts.find((account) => account.id === id);
 
         if (!existing) {
           accounts.push({ id, name });
-          writeAccounts(accounts);
+          await store.writeAccounts(accounts);
         }
 
-        sendJson(res, existing ? 200 : 201, { account: existing || { id, name }, accounts: readAccounts() });
+        sendJson(res, existing ? 200 : 201, { account: existing || { id, name }, accounts: await store.readAccounts() });
       } catch (error) {
         sendJson(res, 400, { error: 'Invalid JSON payload' });
       }
@@ -228,7 +348,7 @@ async function handleApi(req, res) {
 
   if (urlPath === '/api/catalog') {
     if (req.method === 'GET') {
-      sendJson(res, 200, { catalog: readCatalog() });
+      sendJson(res, 200, { catalog: await store.readCatalog() });
       return;
     }
 
@@ -245,7 +365,7 @@ async function handleApi(req, res) {
           return;
         }
 
-        const catalog = readCatalog();
+        const catalog = await store.readCatalog();
         const existing = catalog.find(
           (exercise) => exercise.name.toLowerCase() === name.toLowerCase()
             && exercise.category.toLowerCase() === category.toLowerCase(),
@@ -266,7 +386,7 @@ async function handleApi(req, res) {
 
         const exercise = { id, name, category };
         catalog.push(exercise);
-        writeCatalog(catalog);
+        await store.writeCatalog(catalog);
         sendJson(res, 201, { exercise, catalog });
       } catch (error) {
         sendJson(res, 400, { error: 'Invalid JSON payload' });
@@ -283,7 +403,7 @@ async function handleApi(req, res) {
       if (!requireAuth(req, res)) return;
 
       const id = decodeURIComponent(urlPath.replace('/api/catalog/', '')).trim();
-      const catalog = readCatalog();
+      const catalog = await store.readCatalog();
       const nextCatalog = catalog.filter((exercise) => exercise.id !== id);
 
       if (nextCatalog.length === catalog.length) {
@@ -291,7 +411,7 @@ async function handleApi(req, res) {
         return;
       }
 
-      writeCatalog(nextCatalog);
+      await store.writeCatalog(nextCatalog);
       sendJson(res, 200, { catalog: nextCatalog });
       return;
     }
@@ -311,7 +431,7 @@ async function handleApi(req, res) {
   }
 
   if (req.method === 'GET') {
-    const users = readUsers();
+    const users = await store.readUsers();
     sendJson(res, 200, { uid: user.uid, data: users[user.uid] || emptyUserData() });
     return;
   }
@@ -319,14 +439,14 @@ async function handleApi(req, res) {
   if (req.method === 'PUT') {
     try {
       const body = JSON.parse(await readRequestBody(req));
-      const users = readUsers();
+      const users = await store.readUsers();
       users[user.uid] = {
         workouts: Array.isArray(body.workouts) ? body.workouts : [],
         plans: body.plans && typeof body.plans === 'object' && !Array.isArray(body.plans) ? body.plans : {},
         draft: Array.isArray(body.draft) ? body.draft : [],
         templates: Array.isArray(body.templates) ? body.templates : [],
       };
-      writeUsers(users);
+      await store.writeUsers(users);
       sendJson(res, 200, { uid: user.uid, data: users[user.uid] });
     } catch (error) {
       sendJson(res, 400, { error: 'Invalid JSON payload' });
@@ -341,7 +461,10 @@ const server = http.createServer((req, res) => {
   const urlPath = (req.url || '/').split('?')[0];
 
   if (urlPath.startsWith('/api/')) {
-    handleApi(req, res);
+    handleApi(req, res).catch((error) => {
+      console.error(error);
+      sendJson(res, 500, { error: 'Internal Server Error' });
+    });
     return;
   }
 
