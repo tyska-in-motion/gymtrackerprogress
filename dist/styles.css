@@ -763,11 +763,12 @@ nav small {
 
 .workout-card-head {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   align-items: flex-start;
   gap: 10px;
 }
 
+.edit-workout,
 .delete-workout {
   width: 28px;
   height: 28px;
@@ -782,6 +783,12 @@ nav small {
   line-height: 1;
   place-items: center;
   padding: 0;
+}
+
+.edit-workout {
+  background: var(--md-primary-container);
+  color: var(--md-primary);
+  font-size: 15px;
 }
 
 .days button span,
