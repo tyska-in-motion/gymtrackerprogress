@@ -216,3 +216,15 @@ nav small { margin-top: 3px; }
 .set { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
 .set-metric-toggle { border: 0; margin-left: auto; }
 @media (max-width: 420px) { .duration-fields { grid-template-columns: 1fr; } .set-metric-toggle { margin-left: 0; width: 100%; } }
+.login-account { border: 1px solid #c7d2fe; border-radius: 22px; background: var(--tw-primary-soft); padding: 14px; text-align: left; }
+.login-account b { color: var(--tw-primary-dark); }
+.record-card { align-items: flex-start; }
+.record-card > span { display: grid; gap: 6px; }
+.record-card small { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
+.record-info-wrap { position: relative; }
+.record-info { border: 1px solid var(--tw-border-strong); border-radius: 999px; font-family: Georgia, serif; font-style: italic; font-weight: 900; }
+.record-popover { position: absolute; right: 0; top: calc(100% + 8px); z-index: 12; width: min(260px, calc(100vw - 64px)); border: 1px solid #c7d2fe; border-radius: 18px; background: #fff; box-shadow: 0 18px 40px rgba(15,23,42,.18); color: var(--tw-text); display: grid; gap: 6px; padding: 12px; text-align: left; }
+.record-popover small { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
+.record-popover ul { display: grid; gap: 5px; list-style: none; margin: 4px 0 0; padding: 0; }
+.record-popover li { color: var(--tw-muted); font-size: 12px; font-weight: 700; }
+.inline-rest { margin: -4px 0 14px 18px; }
