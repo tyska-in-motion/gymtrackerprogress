@@ -227,4 +227,5 @@ nav small { margin-top: 3px; }
 .record-popover small { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
 .record-popover ul { display: grid; gap: 5px; list-style: none; margin: 4px 0 0; padding: 0; }
 .record-popover li { color: var(--tw-muted); font-size: 12px; font-weight: 700; }
-.inline-rest { margin: -4px 0 14px 18px; }
+.sticky-rest { position: sticky; top: 0; z-index: 10; margin-top: 0; }
+
