@@ -41,6 +41,7 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .phone {
   width: min(100%, 480px);
   min-height: 100vh;
+  height: 100vh;
   margin: 0 auto;
   background: rgba(248, 250, 252, .88);
   position: relative;
@@ -48,8 +49,12 @@ button:disabled { cursor: not-allowed; opacity: .55; }
   box-shadow: 0 24px 80px rgba(15, 23, 42, .18);
 }
 
-.screen { min-height: 100vh; overflow: auto; padding: 34px 22px 106px; }
+.screen { height: 100vh; min-height: 100vh; overflow: auto; padding: 34px 22px 106px; }
 .screen::-webkit-scrollbar { display: none; }
+
+@supports (height: 100dvh) {
+  .phone, .screen { height: 100dvh; }
+}
 
 h1 { color: var(--tw-text); font-size: 36px; margin: 0 0 10px; line-height: 1.02; letter-spacing: -.04em; }
 h2 { color: var(--tw-text); font-size: 21px; margin: 30px 0 14px; letter-spacing: -.02em; }
@@ -227,5 +232,5 @@ nav small { margin-top: 3px; }
 .record-popover small { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
 .record-popover ul { display: grid; gap: 5px; list-style: none; margin: 4px 0 0; padding: 0; }
 .record-popover li { color: var(--tw-muted); font-size: 12px; font-weight: 700; }
-.sticky-rest { position: sticky; top: 0; z-index: 10; margin-top: 0; }
+.sticky-rest { position: sticky; top: 0; z-index: 15; margin-top: 0; }
 
