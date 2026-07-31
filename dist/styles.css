@@ -74,11 +74,11 @@ h2 { color: var(--tw-text); font-size: 21px; margin: 30px 0 14px; letter-spacing
 .account-list { display: grid; gap: 12px; margin: 24px 0 4px; }
 .login button.account { background: var(--tw-surface-strong); border: 1px solid var(--tw-border); color: var(--tw-text); justify-content: flex-start; margin: 0; box-shadow: var(--tw-shadow); }
 .new-account { display: grid; gap: 12px; margin-top: 18px; }
-.new-account input, .workout-name input, .exercise-form input, .exercise-form textarea, .picker-label input, .picker-label select, .set input {
+.new-account input, .workout-name input, .exercise-form input, .exercise-form textarea, .picker-label input, .picker-label select, .replace-exercise-label select, .set input {
   width: 100%; border: 1px solid var(--tw-border-strong); border-radius: 16px; background: rgba(255,255,255,.96); color: var(--tw-text); font: inherit; outline: 0; box-shadow: 0 1px 2px rgba(15,23,42,.04);
 }
 .new-account input { font-size: 17px; padding: 17px 18px; }
-.new-account input:focus, .workout-name input:focus, .exercise-form input:focus, .exercise-form textarea:focus, .picker-label input:focus, .picker-label select:focus, .set input:focus { border-color: var(--tw-primary); box-shadow: 0 0 0 4px var(--tw-ring); }
+.new-account input:focus, .workout-name input:focus, .exercise-form input:focus, .exercise-form textarea:focus, .picker-label input:focus, .picker-label select:focus, .replace-exercise-label select:focus, .set input:focus { border-color: var(--tw-primary); box-shadow: 0 0 0 4px var(--tw-ring); }
 .login .new-account button { margin: 0; }
 
 .avatar.small { width: 38px; height: 38px; border-radius: 14px; font-size: 18px; }
@@ -143,6 +143,9 @@ nav small { margin-top: 3px; }
 .workout-name { display: grid; gap: 8px; margin-bottom: 14px; }
 .workout-name input { font-size: 30px; font-weight: 800; letter-spacing: -.03em; padding: 15px 16px; }
 .exercise-block { border-left: 5px solid #c7d2fe; transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.replace-exercise-label { color: var(--tw-muted); display: grid; font-size: 13px; font-weight: 800; gap: 7px; margin-top: 14px; }
+.replace-exercise-label select { font-size: 15px; font-weight: 700; padding: 11px 13px; }
+.replace-exercise-label small { font-size: 12px; font-weight: 600; }
 .exercise-title { align-items: flex-start; }
 .mini { font-size: 13px; padding: 9px 10px; white-space: nowrap; }
 .exercise-actions, .planned-actions, .template-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
