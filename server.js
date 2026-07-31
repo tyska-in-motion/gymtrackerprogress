@@ -240,8 +240,13 @@ async function initPostgres() {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       category TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      image_url TEXT NOT NULL DEFAULT '',
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+
+    ALTER TABLE catalog_exercises ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT '';
+    ALTER TABLE catalog_exercises ADD COLUMN IF NOT EXISTS image_url TEXT NOT NULL DEFAULT '';
 
     CREATE UNIQUE INDEX IF NOT EXISTS catalog_exercises_name_category_idx
       ON catalog_exercises (lower(name), lower(category));
@@ -249,8 +254,8 @@ async function initPostgres() {
 
   for (const exercise of defaultCatalog) {
     await pgClient.query(
-      'INSERT INTO catalog_exercises (id, name, category) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING',
-      [exercise.id, exercise.name, exercise.category],
+      'INSERT INTO catalog_exercises (id, name, category, description, image_url) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO NOTHING',
+      [exercise.id, exercise.name, exercise.category, exercise.description || '', exercise.imageUrl || ''],
     );
   }
 }
@@ -304,7 +309,7 @@ const postgresStore = {
   },
   async readCatalog() {
     await ensurePostgres();
-    const result = await pgClient.query('SELECT id, name, category FROM catalog_exercises ORDER BY category, name');
+    const result = await pgClient.query('SELECT id, name, category, description, image_url AS "imageUrl" FROM catalog_exercises ORDER BY category, name');
     return result.rows.length ? result.rows : defaultCatalog;
   },
   async writeCatalog(catalog) {
@@ -314,8 +319,8 @@ const postgresStore = {
       await pgClient.query('DELETE FROM catalog_exercises');
       for (const exercise of catalog) {
         await pgClient.query(
-          'INSERT INTO catalog_exercises (id, name, category) VALUES ($1, $2, $3)',
-          [exercise.id, exercise.name, exercise.category],
+          'INSERT INTO catalog_exercises (id, name, category, description, image_url) VALUES ($1, $2, $3, $4, $5)',
+          [exercise.id, exercise.name, exercise.category, exercise.description || '', exercise.imageUrl || ''],
         );
       }
       await pgClient.query('COMMIT');
@@ -425,6 +430,8 @@ async function handleApi(req, res) {
         const body = JSON.parse(await readRequestBody(req));
         const name = String(body.name || '').trim();
         const category = String(body.category || '').trim();
+        const description = String(body.description || '').trim();
+        const imageUrl = String(body.imageUrl || '').trim();
 
         if (name.length < 2 || category.length < 2) {
           sendJson(res, 400, { error: 'Podaj nazwę ćwiczenia i kategorię.' });
@@ -450,7 +457,12 @@ async function handleApi(req, res) {
           counter += 1;
         }
 
-        const exercise = { id, name, category };
+        if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+          sendJson(res, 400, { error: 'Link do zdjęcia musi zaczynać się od http:// lub https://.' });
+          return;
+        }
+
+        const exercise = { id, name, category, description, imageUrl };
         catalog.push(exercise);
         await store.writeCatalog(catalog);
         sendJson(res, 201, { exercise, catalog });
@@ -465,6 +477,33 @@ async function handleApi(req, res) {
   }
 
   if (urlPath.startsWith('/api/catalog/')) {
+    if (req.method === 'PUT') {
+      if (!requireAuth(req, res)) return;
+      try {
+        const id = decodeURIComponent(urlPath.replace('/api/catalog/', '')).trim();
+        const body = JSON.parse(await readRequestBody(req));
+        const name = String(body.name || '').trim();
+        const category = String(body.category || '').trim();
+        const description = String(body.description || '').trim();
+        const imageUrl = String(body.imageUrl || '').trim();
+        if (name.length < 2 || category.length < 2) {
+          sendJson(res, 400, { error: 'Podaj nazwę ćwiczenia i kategorię.' }); return;
+        }
+        if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+          sendJson(res, 400, { error: 'Link do zdjęcia musi zaczynać się od http:// lub https://.' }); return;
+        }
+        const catalog = await store.readCatalog();
+        const exercise = catalog.find((item) => item.id === id);
+        if (!exercise) { sendJson(res, 404, { error: 'Nie znaleziono ćwiczenia.' }); return; }
+        if (catalog.some((item) => item.id !== id && item.name.toLowerCase() === name.toLowerCase() && item.category.toLowerCase() === category.toLowerCase())) {
+          sendJson(res, 409, { error: 'Takie ćwiczenie już istnieje.' }); return;
+        }
+        Object.assign(exercise, { name, category, description, imageUrl });
+        await store.writeCatalog(catalog);
+        sendJson(res, 200, { exercise, catalog });
+      } catch (error) { sendJson(res, 400, { error: 'Invalid JSON payload' }); }
+      return;
+    }
     if (req.method === 'DELETE') {
       if (!requireAuth(req, res)) return;
 
