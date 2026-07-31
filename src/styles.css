@@ -234,3 +234,19 @@ nav small { margin-top: 3px; }
 .record-popover li { color: var(--tw-muted); font-size: 12px; font-weight: 700; }
 .sticky-rest { position: sticky; top: 0; z-index: 15; margin-top: 0; }
 
+
+.muscle-rest h2 { margin-bottom: 12px; }
+.muscle-rest-grid { display: grid; gap: 0; padding-block: 6px; }
+.muscle-rest-grid div { align-items: center; display: flex; justify-content: space-between; gap: 16px; padding: 12px 4px; }
+.muscle-rest-grid div + div { border-top: 1px solid var(--tw-border); }
+.muscle-rest-grid span { color: var(--tw-text); font-weight: 800; }
+.muscle-rest-grid b { color: var(--tw-primary); font-size: 14px; text-align: right; }
+.automatic-name { align-self: stretch; background: var(--tw-primary-soft); border: 1px solid #c7d2fe; border-radius: 18px; display: grid; gap: 5px; padding: 12px 14px; }
+.automatic-name small { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
+.automatic-name b { color: var(--tw-primary-dark); font-size: 19px; }
+.record-group { margin: 12px 0; }
+.record-group-summary { align-items: center; display: flex; justify-content: space-between; margin: 0; text-align: left; width: 100%; }
+.record-group-summary > span:first-child { display: grid; gap: 4px; }
+.record-group-summary small { color: var(--tw-muted); font-size: 13px; font-weight: 800; }
+.record-group-details { border-left: 2px solid #c7d2fe; margin-left: 16px; padding-left: 10px; }
+.record-group-details .record-card { border-radius: 20px; margin-block: 10px; }
