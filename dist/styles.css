@@ -74,11 +74,11 @@ h2 { color: var(--tw-text); font-size: 21px; margin: 30px 0 14px; letter-spacing
 .account-list { display: grid; gap: 12px; margin: 24px 0 4px; }
 .login button.account { background: var(--tw-surface-strong); border: 1px solid var(--tw-border); color: var(--tw-text); justify-content: flex-start; margin: 0; box-shadow: var(--tw-shadow); }
 .new-account { display: grid; gap: 12px; margin-top: 18px; }
-.new-account input, .workout-name input, .exercise-form input, .picker-label input, .picker-label select, .set input {
+.new-account input, .workout-name input, .exercise-form input, .exercise-form textarea, .picker-label input, .picker-label select, .set input {
   width: 100%; border: 1px solid var(--tw-border-strong); border-radius: 16px; background: rgba(255,255,255,.96); color: var(--tw-text); font: inherit; outline: 0; box-shadow: 0 1px 2px rgba(15,23,42,.04);
 }
 .new-account input { font-size: 17px; padding: 17px 18px; }
-.new-account input:focus, .workout-name input:focus, .exercise-form input:focus, .picker-label input:focus, .picker-label select:focus, .set input:focus { border-color: var(--tw-primary); box-shadow: 0 0 0 4px var(--tw-ring); }
+.new-account input:focus, .workout-name input:focus, .exercise-form input:focus, .exercise-form textarea:focus, .picker-label input:focus, .picker-label select:focus, .set input:focus { border-color: var(--tw-primary); box-shadow: 0 0 0 4px var(--tw-ring); }
 .login .new-account button { margin: 0; }
 
 .avatar.small { width: 38px; height: 38px; border-radius: 14px; font-size: 18px; }
@@ -108,7 +108,8 @@ h2 { color: var(--tw-text); font-size: 21px; margin: 30px 0 14px; letter-spacing
 .exercise-form, .picker-label { display: grid; gap: 12px; margin: 18px 0; }
 .exercise-form { border: 1px solid #c7d2fe; border-radius: 24px; background: var(--tw-muted-surface); padding: 16px; }
 .exercise-form label, .picker-label, .workout-name { color: var(--tw-muted); font-size: 13px; font-weight: 800; letter-spacing: .02em; }
-.exercise-form input, .picker-label input, .picker-label select { font-size: 16px; font-weight: 700; margin-top: 7px; padding: 13px 14px; }
+.exercise-form input, .exercise-form textarea, .picker-label input, .picker-label select { font-size: 16px; font-weight: 700; margin-top: 7px; padding: 13px 14px; }
+.exercise-form textarea { min-height: 92px; resize: vertical; }
 .exercise-form button { border: 0; border-radius: 18px; background: var(--tw-secondary); color: #fff; font-weight: 800; padding: 14px; }
 
 .badge { display: inline-flex; align-items: center; border-radius: 999px; background: var(--tw-primary-soft); color: var(--tw-primary); font-size: 12px; font-weight: 800; margin: 0 0 0 8px; padding: 5px 9px; }
@@ -159,6 +160,13 @@ nav small { margin-top: 3px; }
 .rest-panel b { color: #fff; font-size: 26px; }
 .catalog-list { margin-top: 30px; }
 .catalog-item span span { color: var(--tw-muted); font-size: 13px; }
+.catalog-actions { display: flex; gap: 7px; }
+.catalog-entry + .catalog-entry { border-top: 1px solid var(--tw-border); }
+.catalog-entry .sheet-item { border-bottom: 0; }
+.exercise-details { border-radius: 18px; background: var(--tw-primary-soft); color: var(--tw-text); line-height: 1.5; margin: 0 0 14px; padding: 14px; }
+.exercise-details p, .record-popover p { margin: 0 0 10px; white-space: pre-wrap; }
+.exercise-photo { border-radius: 14px; display: block; margin-top: 10px; max-height: 260px; object-fit: cover; width: 100%; }
+.edit-catalog-form { margin-top: 0; }
 .catalog-open, .templates-open { margin-top: 0; }
 
 .sheet-backdrop { position: absolute; inset: 0; z-index: 20; display: flex; align-items: flex-end; background: rgba(15,23,42,.48); backdrop-filter: blur(4px); }
