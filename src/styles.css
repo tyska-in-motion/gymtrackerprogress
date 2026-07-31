@@ -121,7 +121,7 @@ h2 { color: var(--tw-text); font-size: 21px; margin: 30px 0 14px; letter-spacing
 .days button span, .days button b { display: block; }
 .days button b { color: inherit; font-size: 19px; margin-top: 4px; }
 
-.profile { display: flex; align-items: center; gap: 16px; }
+.profile { display: flex; align-items: center; gap: 14px; padding-block: 14px; }
 .avatar { width: 60px; height: 60px; border-radius: 20px; background: linear-gradient(135deg, var(--tw-primary), #06b6d4); color: #fff; display: grid; place-items: center; font-size: 24px; font-weight: 800; }
 .profile p { margin: 3px 0; word-break: break-word; }
 
@@ -223,9 +223,10 @@ nav small { margin-top: 3px; }
 @media (max-width: 420px) { .duration-fields { grid-template-columns: 1fr; } .set-metric-toggle { margin-left: 0; width: 100%; } }
 .login-account { border: 1px solid #c7d2fe; border-radius: 22px; background: var(--tw-primary-soft); padding: 14px; text-align: left; }
 .login-account b { color: var(--tw-primary-dark); }
-.record-card { align-items: flex-start; }
+.record-card { align-items: center; gap: 8px; padding: 14px; }
 .record-card > span { display: grid; gap: 6px; }
 .record-card small { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
+.record-card strong { flex: 0 0 auto; font-size: 15px; white-space: nowrap; }
 .record-info-wrap { position: relative; }
 .record-info { border: 1px solid var(--tw-border-strong); border-radius: 999px; font-family: Georgia, serif; font-style: italic; font-weight: 900; }
 .record-popover { position: absolute; right: 0; top: calc(100% + 8px); z-index: 12; width: min(260px, calc(100vw - 64px)); border: 1px solid #c7d2fe; border-radius: 18px; background: #fff; box-shadow: 0 18px 40px rgba(15,23,42,.18); color: var(--tw-text); display: grid; gap: 6px; padding: 12px; text-align: left; }
@@ -244,9 +245,9 @@ nav small { margin-top: 3px; }
 .automatic-name { align-self: stretch; background: var(--tw-primary-soft); border: 1px solid #c7d2fe; border-radius: 18px; display: grid; gap: 5px; padding: 12px 14px; }
 .automatic-name small { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
 .automatic-name b { color: var(--tw-primary-dark); font-size: 19px; }
-.record-group { margin: 12px 0; }
+.record-group { margin: 10px 0; }
 .record-group-summary { align-items: center; display: flex; justify-content: space-between; margin: 0; text-align: left; width: 100%; }
 .record-group-summary > span:first-child { display: grid; gap: 4px; }
 .record-group-summary small { color: var(--tw-muted); font-size: 13px; font-weight: 800; }
 .record-group-details { border-left: 2px solid #c7d2fe; margin-left: 16px; padding-left: 10px; }
-.record-group-details .record-card { border-radius: 20px; margin-block: 10px; }
+.record-group-details .record-card { border-radius: 20px; margin-block: 8px; }
