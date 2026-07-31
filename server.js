@@ -347,6 +347,32 @@ function emptyUserData() {
   return { workouts: [], plans: {}, draft: [], templates: [] };
 }
 
+function updateExerciseReferences(users, previousExercise, updatedExercise) {
+  const updateExercises = (exercises) => {
+    if (!Array.isArray(exercises)) return;
+    for (const exercise of exercises) {
+      if (exercise && exercise.name === previousExercise.name && exercise.category === previousExercise.category) {
+        Object.assign(exercise, {
+          name: updatedExercise.name,
+          category: updatedExercise.category,
+          description: updatedExercise.description,
+          imageUrl: updatedExercise.imageUrl,
+        });
+      }
+    }
+  };
+
+  for (const userData of Object.values(users)) {
+    if (!userData || typeof userData !== 'object') continue;
+    updateExercises(userData.draft);
+    for (const workout of Array.isArray(userData.workouts) ? userData.workouts : []) updateExercises(workout.exercises);
+    for (const template of Array.isArray(userData.templates) ? userData.templates : []) updateExercises(template.exercises);
+    for (const plan of Object.values(userData.plans && typeof userData.plans === 'object' ? userData.plans : {})) {
+      if (plan && typeof plan === 'object') updateExercises(plan.exercises);
+    }
+  }
+}
+
 async function handleApi(req, res) {
   const urlPath = (req.url || '/').split('?')[0];
 
@@ -498,8 +524,12 @@ async function handleApi(req, res) {
         if (catalog.some((item) => item.id !== id && item.name.toLowerCase() === name.toLowerCase() && item.category.toLowerCase() === category.toLowerCase())) {
           sendJson(res, 409, { error: 'Takie ćwiczenie już istnieje.' }); return;
         }
+        const previousExercise = { ...exercise };
         Object.assign(exercise, { name, category, description, imageUrl });
+        const users = await store.readUsers();
+        updateExerciseReferences(users, previousExercise, exercise);
         await store.writeCatalog(catalog);
+        await store.writeUsers(users);
         sendJson(res, 200, { exercise, catalog });
       } catch (error) { sendJson(res, 400, { error: 'Invalid JSON payload' }); }
       return;
