@@ -244,8 +244,16 @@ nav small { margin-top: 3px; }
 .record-info { border: 1px solid var(--tw-border-strong); border-radius: 999px; font-family: Georgia, serif; font-style: italic; font-weight: 900; }
 .record-popover { position: absolute; right: 0; top: calc(100% + 8px); z-index: 101; width: min(260px, calc(100vw - 64px)); border: 1px solid #c7d2fe; border-radius: 18px; background: #fff; box-shadow: 0 18px 40px rgba(15,23,42,.28); color: var(--tw-text); display: grid; gap: 6px; padding: 12px; text-align: left; }
 .record-popover small { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
-.record-result { display: grid; gap: 4px; }
+.record-popover p { color: var(--tw-muted); font-size: 13px; margin: 0; }
+.record-section { display: grid; gap: 7px; }
+.record-section + .record-section { border-top: 1px solid var(--tw-border); padding-top: 9px; }
+.record-result { border-radius: 14px; background: var(--tw-primary-soft); display: grid; gap: 4px; padding: 9px; }
+.record-result span { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
 .record-result strong { font-size: 17px; }
+.best-attempts { display: grid; gap: 7px; list-style: none; margin: 0; padding: 0; }
+.best-attempts li { align-items: center; display: flex; justify-content: space-between; gap: 10px; }
+.best-attempts span { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
+.best-attempts strong { color: var(--tw-text); font-size: 13px; text-align: right; white-space: nowrap; }
 .sticky-rest { position: sticky; top: 0; z-index: 15; margin-top: 0; }
 
 
