@@ -10,6 +10,7 @@ const accountsFile = join(dataDir, 'accounts.json');
 const catalogFile = join(dataDir, 'catalog.json');
 const port = Number(process.env.PORT) || 3000;
 const accessPassword = process.env.GYM_ACCESS_PASSWORD || process.env.ACCESS_PASSWORD || process.env.APP_PASSWORD || '';
+const catalogSubscribers = new Set();
 
 const databaseEnvNames = [
   'DATABASE_URL',
@@ -89,6 +90,22 @@ function requireAuth(req, res) {
 function sendJson(res, status, body) {
   res.writeHead(status, { 'Content-Type': contentTypes['.json'] });
   res.end(JSON.stringify(body));
+}
+
+function publishCatalog(catalog) {
+  const message = `event: catalog\ndata: ${JSON.stringify({ catalog })}\n\n`;
+  for (const subscriber of catalogSubscribers) subscriber.write(message);
+}
+
+function openCatalogStream(req, res) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+  });
+  res.write(': connected\n\n');
+  catalogSubscribers.add(res);
+  req.on('close', () => catalogSubscribers.delete(res));
 }
 
 function readRequestBody(req) {
@@ -443,6 +460,15 @@ async function handleApi(req, res) {
     return;
   }
 
+  if (urlPath === '/api/catalog/stream') {
+    if (req.method !== 'GET') {
+      sendJson(res, 405, { error: 'Method not allowed' });
+      return;
+    }
+    openCatalogStream(req, res);
+    return;
+  }
+
   if (urlPath === '/api/catalog') {
     if (req.method === 'GET') {
       sendJson(res, 200, { catalog: await store.readCatalog() });
@@ -491,6 +517,7 @@ async function handleApi(req, res) {
         const exercise = { id, name, category, description, imageUrl };
         catalog.push(exercise);
         await store.writeCatalog(catalog);
+        publishCatalog(catalog);
         sendJson(res, 201, { exercise, catalog });
       } catch (error) {
         sendJson(res, 400, { error: 'Invalid JSON payload' });
@@ -530,6 +557,7 @@ async function handleApi(req, res) {
         updateExerciseReferences(users, previousExercise, exercise);
         await store.writeCatalog(catalog);
         await store.writeUsers(users);
+        publishCatalog(catalog);
         sendJson(res, 200, { exercise, catalog });
       } catch (error) { sendJson(res, 400, { error: 'Invalid JSON payload' }); }
       return;
@@ -547,6 +575,7 @@ async function handleApi(req, res) {
       }
 
       await store.writeCatalog(nextCatalog);
+      publishCatalog(nextCatalog);
       sendJson(res, 200, { catalog: nextCatalog });
       return;
     }
