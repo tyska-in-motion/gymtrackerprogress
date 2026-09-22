@@ -272,3 +272,14 @@ nav small { margin-top: 3px; }
 .record-group-summary small { color: var(--tw-muted); font-size: 13px; font-weight: 800; }
 .record-group-details { border-left: 2px solid #c7d2fe; margin-left: 16px; padding-left: 10px; }
 .record-group-details .record-card { border-radius: 20px; margin-block: 8px; }
+
+.series-number, .set-label {
+  color: var(--tw-primary);
+  font-size: 12px;
+  font-weight: 900;
+}
+.series-number { display: block; margin-top: 5px; }
+.set-label { flex: 0 0 100%; }
+.catalog-category + .catalog-category { margin-top: 24px; }
+.catalog-category h3 { color: var(--tw-primary-dark); font-size: 14px; letter-spacing: .06em; margin: 0; padding: 12px 0 8px; text-transform: uppercase; }
+.catalog-category .catalog-entry + .catalog-entry { border-top: 1px solid var(--tw-border); }
