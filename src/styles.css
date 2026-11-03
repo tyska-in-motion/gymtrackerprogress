@@ -310,3 +310,7 @@ nav small { margin-top: 3px; }
  .exercise-progress-item { grid-template-columns: 1fr; }
  .exercise-progress-item > strong { text-align: left; }
 }
+
+/* Exercise progress records are always expanded in the profile */
+.record-group-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 18px 0 8px; font-size: 15px; }
+.record-group-heading small { color: var(--tw-muted); font-size: 12px; font-weight: 700; }
