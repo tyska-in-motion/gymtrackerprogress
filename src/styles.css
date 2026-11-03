@@ -329,3 +329,15 @@ nav small { margin-top: 3px; }
 .record-exercise > summary .chevron { color: var(--tw-primary); transition: transform .2s; }
 .record-exercise[open] > summary .chevron { transform: rotate(180deg); }
 .record-exercise .exercise-progress-card { margin: 0; border: 0; border-top: 1px solid var(--tw-border); border-radius: 0; }
+
+/* Explicitly controlled profile record accordions */
+.record-category { overflow: hidden; margin: 9px 0; border: 1px solid var(--tw-border); border-radius: 16px; background: var(--tw-surface); }
+.record-toggle { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; border: 0; color: var(--tw-text); background: transparent; cursor: pointer; text-align: left; }
+.record-category-toggle { padding: 14px 16px; }
+.record-category-toggle > span:first-child { display: grid; gap: 4px; }
+.record-category-toggle small { color: var(--tw-muted); font-size: 13px; font-weight: 700; }
+.record-toggle-icon { flex: 0 0 auto; color: var(--tw-primary); font-size: 20px; font-weight: 700; }
+.record-group-details { display: grid; gap: 7px; border-top: 1px solid var(--tw-border); padding: 9px; }
+.record-exercise { overflow: hidden; border: 1px solid var(--tw-border); border-radius: 12px; background: var(--tw-surface); }
+.record-exercise-toggle { padding: 12px; }
+.record-exercise .exercise-progress-card { margin: 0; border: 0; border-top: 1px solid var(--tw-border); border-radius: 0; }
