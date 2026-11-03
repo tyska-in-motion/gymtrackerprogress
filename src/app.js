@@ -131,7 +131,7 @@ function exerciseProgressRecords(){
   });
  });
  return [...groups.values()].map(group=>{
-  const sessions=[...group.sessions].sort((a,b)=>String(b.date).localeCompare(String(a.date))||a.workoutIndex-b.workoutIndex);
+  const sessions=[...group.sessions].sort((a,b)=>String(b.date).localeCompare(String(a.date))||b.workoutIndex-a.workoutIndex);
   const byReps=(a,b)=>b.value-a.value||b.kg-a.kg;
   const lastWorkout=sessions[0]?.record||null;
   const repRecord=[...group.allSets].sort(byReps)[0]||null;
@@ -145,10 +145,7 @@ function progressRecordLine(label,record,weightOnly=false){
 function recordsByCategory(records){
  const groups=[];
  (records||[]).forEach(record=>{const name=muscleLabel(record.category);let group=groups.find(item=>item.name===name);if(!group){group={name,records:[]};groups.push(group);}group.records.push(record);});
- return groups.length?groups.map(group=>{
-  const expanded=expandedRecordCategories.has(group.name);
-  return `<section class="record-group"><button class="card record-group-summary" data-record-category="${escapeHtml(group.name)}" type="button" aria-expanded="${expanded}"><span><b>${escapeHtml(group.name)}</b><small>${group.records.length} ${group.records.length===1?'ćwiczenie':'ćwiczeń'}</small></span><span class="chevron">${expanded?'⌃':'⌄'}</span></button>${expanded?`<div class="record-group-details">${group.records.map(record=>`<article class="card exercise-progress-card"><b>${escapeHtml(record.name)}</b><div class="exercise-progress-grid">${progressRecordLine('Ostatni trening · max powtórzeń',record.lastWorkout)}${progressRecordLine('Rekord powtórzeń · historia',record.repRecord)}${progressRecordLine('Największy ciężar · historia',record.weightRecord,true)}</div></article>`).join('')}</div>`:''}</section>`;
- }).join(''):'<p class="empty compact">Brak zapisanych rekordów.</p>';
+ return groups.length?groups.map(group=>`<section class="record-group"><h3 class="record-group-heading">${escapeHtml(group.name)} <small>${group.records.length} ${group.records.length===1?'ćwiczenie':'ćwiczeń'}</small></h3><div class="record-group-details">${group.records.map(record=>`<article class="card exercise-progress-card"><b>${escapeHtml(record.name)}</b><div class="exercise-progress-grid">${progressRecordLine('Ostatni trening · maks. powtórzeń i największy ciężar przy tej liczbie',record.lastWorkout)}${progressRecordLine('Rekord powtórzeń · cała historia',record.repRecord)}${progressRecordLine('Największy ciężar · cała historia',record.weightRecord,true)}</div></article>`).join('')}</div></section>`).join(''):'<p class="empty compact">Brak zapisanych rekordów.</p>';
 }
 function exerciseAttempts(exercise){const name=normalizedText(exercise?.name);const category=normalizedText(exercise?.category);return workoutEntries().filter(entry=>normalizedText(entry.name)===name&&(!category||normalizedText(entry.category)===category)&&String(entry.workoutId)!==String(editingWorkoutId)).sort(compareRecord);}
 function exerciseRecord(name){return stats().records.find(r=>r.name===name);}
