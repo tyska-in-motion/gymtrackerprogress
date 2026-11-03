@@ -78,7 +78,7 @@ function stats(){const weekStart=toIsoDate(startOfWeek(new Date()));const weekEn
 function render(keepScroll=false){const previousScroll=keepScroll?[...document.querySelectorAll('.screen, .sheet-content')].map(element=>element.scrollTop):[];if(!user){root.innerHTML=sprite()+shell(login(),false);bindLogin();return;} if(isLoading){root.innerHTML=sprite()+shell('<div class="login"><div class="logo">🏋️</div><h1>Ładowanie danych...</h1><p>Przygotowujemy osobny widok tej osoby.</p></div>',false);return;} root.innerHTML=sprite()+shell((syncError?`<p class="error">${syncError}</p>`:'')+(catalogError?`<p class="error">${catalogError}</p>`:'')+(planning?builder():views[tab](user)),!planning); bind();catalogSheetOpening=false;ensureTicker();if(keepScroll)requestAnimationFrame(()=>{document.querySelectorAll('.screen, .sheet-content').forEach((element,index)=>{element.scrollTop=previousScroll[index]||0;});ensureTicker();});}
 function shell(content,nav=true){return `<main class="phone"><section class="screen">${content}</section>${nav?navHtml():''}</main>`;}
 function login(){const accounts=readAccounts();const selected=accounts.find(a=>a.id===loginAccountId);return `<div class="login"><div class="logo">🏋️</div><p class="eyebrow">Twój dziennik siłowni</p><h1>Kto teraz ćwiczy?</h1><p>Wybierz osobę i podaj hasło dostępu. Każdy profil ma własne treningi, historię i plany.</p>${accounts.length?`<div class="account-list">${accounts.map(a=>`<button class="account" data-id="${a.id}"><span class="avatar small">${escapeHtml(a.name[0])}</span><span>${escapeHtml(a.name)}</span></button>`).join('')}</div>`:'<p class="empty">Brak kont. Dodaj pierwszą osobę.</p>'}${selected?`<form id="login-account" class="new-account login-account"><b>Hasło dla: ${escapeHtml(selected.name)}</b><input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Hasło dostępu" required autofocus><button type="submit">Zaloguj</button></form>`:''}<form id="new-account" class="new-account"><input id="account-name" name="name" autocomplete="name" placeholder="Imię osoby" required><input id="account-password" name="password" type="password" autocomplete="current-password" placeholder="Hasło dostępu" required><button type="submit">Stwórz nowe konto</button></form>${loginError?`<p class="error">${loginError}</p>`:''}</div>`;}
-const views={home:(u)=>{const s=stats();const recent=recentWorkouts();return `<h1>Hej, ${escapeHtml((u.name||'Sportowcu').split(' ')[0])}</h1><button class="primary" id="start">${icon('play')} Zaplanuj trening</button>${statsHtml(s)}${muscleRestHtml()}<h2>Ostatnie treningi</h2>${recent.length?recent.map(workoutCard).join(''):'<p class="empty compact">Brak treningów z ostatnich 3 dni.</p>'}`},history:()=>historyView(),plan:()=>planView(),profile:(u)=>{const s=stats();const name=u.name||'Użytkownik';return `<h1>Profil</h1><div class="card profile"><div class="avatar">${escapeHtml(name[0])}</div><b>${escapeHtml(name)}</b></div>${statsHtml(s,'profile')}<h2>Rekordy osobiste</h2>${recordsByCategory(s.records)}<button class="secondary" id="logout">Zmień osobę</button>`}};
+const views={home:(u)=>{const s=stats();const recent=recentWorkouts();return `<h1>Hej, ${escapeHtml((u.name||'Sportowcu').split(' ')[0])}</h1><button class="primary" id="start">${icon('play')} Zaplanuj trening</button>${statsHtml(s)}${muscleRestHtml()}<h2>Ostatnie treningi</h2>${recent.length?recent.map(workoutCard).join(''):'<p class="empty compact">Brak treningów z ostatnich 3 dni.</p>'}`},history:()=>historyView(),plan:()=>planView(),profile:(u)=>{const s=stats();const name=u.name||'Użytkownik';return `<h1>Profil</h1><div class="card profile"><div class="avatar">${escapeHtml(name[0])}</div><b>${escapeHtml(name)}</b></div>${statsHtml(s,'profile')}<h2>Rekordy osobiste</h2>${recordsByCategory(exerciseProgressRecords())}<button class="secondary" id="logout">Zmień osobę</button>`}};
 
 function weekLabel(start){const end=addDays(start,6);if(planWeekOffset===0)return 'Ten tydzień';return `${formatShortDate(toIsoDate(start))} – ${formatShortDate(toIsoDate(end))}`;}
 function planEntry(date){const entry=data.plans?.[date];if(!entry)return null;if(typeof entry==='string')return {templateId:null,name:entry};return entry;}
@@ -107,7 +107,49 @@ function statsHtml(s,context='training'){const firstValue=context==='profile'?s.
 function muscleRestHtml(){return `<section class="muscle-rest"><h2>Ostatni trening partii</h2><div class="card muscle-rest-grid">${muscleRestDays().map(item=>`<div><span>${escapeHtml(item.name)}</span><b>${polishDays(item.days)}</b></div>`).join('')}</div></section>`;}
 function recordLabel(r){return r.metric==='seconds'?`${formatMetric(r.value,r.metric)} • ${r.kg} kg`:`${r.kg} kg × ${formatMetric(r.value,r.metric)}`;}
 function recordCard(r){return `<div class="card row record-card"><span><b>${escapeHtml(r.name)}</b><small>${formatDate(r.date)}</small></span><strong>${recordLabel(r)}</strong></div>`;}
-function recordsByCategory(records){const groups=[];(records||[]).forEach(record=>{const name=muscleLabel(record.category);let group=groups.find(item=>item.name===name);if(!group){group={name,records:[]};groups.push(group);}group.records.push(record);});return groups.length?groups.map(group=>{const expanded=expandedRecordCategories.has(group.name);return `<section class="record-group"><button class="card record-group-summary" data-record-category="${escapeHtml(group.name)}" type="button" aria-expanded="${expanded}"><span><b>${escapeHtml(group.name)}</b><small>${group.records.length} ${group.records.length===1?'rekord':'rekordów'}</small></span><span class="chevron">${expanded?'⌃':'⌄'}</span></button>${expanded?`<div class="record-group-details">${group.records.map(recordCard).join('')}</div>`:''}</section>`;}).join(''):'<p class="empty compact">Brak zapisanych rekordów.</p>';}
+function exerciseProgressRecords(){
+ const groups=new Map();
+ data.workouts.forEach((workout,workoutIndex)=>{
+  const workoutGroups=new Map();
+  (Array.isArray(workout.exercises)?workout.exercises:[]).forEach(exercise=>{
+   const name=String(exercise?.name||'').trim();
+   const category=String(exercise?.category||'Bez kategorii').trim();
+   if(!name)return;
+   const key=`${normalizedText(name)}__${normalizedText(category)}`;
+   const sets=(Array.isArray(exercise.sets)?exercise.sets:[]).map(normalizeSet).filter(set=>set.metric==='reps');
+   if(!sets.length)return;
+   if(!workoutGroups.has(key))workoutGroups.set(key,{name,category,sets:[]});
+   workoutGroups.get(key).sets.push(...sets);
+  });
+  workoutGroups.forEach((entry,key)=>{
+   const sessionBest=entry.sets.reduce((best,set)=>!best||set.reps>best.reps||(set.reps===best.reps&&set.kg>best.kg)?set:best,null);
+   if(!sessionBest)return;
+   if(!groups.has(key))groups.set(key,{name:entry.name,category:entry.category,sessions:[],allSets:[]});
+   const group=groups.get(key);
+   group.sessions.push({date:workout.date||'',workoutIndex,record:{...sessionBest,value:sessionBest.reps,metric:'reps',date:workout.date||''}});
+   group.allSets.push(...entry.sets.map(set=>({...set,value:set.reps,metric:'reps',date:workout.date||''})));
+  });
+ });
+ return [...groups.values()].map(group=>{
+  const sessions=[...group.sessions].sort((a,b)=>String(b.date).localeCompare(String(a.date))||a.workoutIndex-b.workoutIndex);
+  const byReps=(a,b)=>b.value-a.value||b.kg-a.kg;
+  const lastWorkout=sessions[0]?.record||null;
+  const repRecord=[...group.allSets].sort(byReps)[0]||null;
+  const weightRecord=[...group.allSets].sort((a,b)=>b.kg-a.kg||b.value-a.value)[0]||null;
+  return {...group,lastWorkout,repRecord,weightRecord};
+ });
+}
+function progressRecordLine(label,record,weightOnly=false){
+ return `<div class="exercise-progress-item"><span>${label}</span>${record?`<strong>${weightOnly?`${record.kg} kg`:`${record.value} powt. • ${record.kg} kg`}</strong><small>${formatDate(record.date)}</small>`:'<strong>—</strong><small>Brak danych</small>'}</div>`;
+}
+function recordsByCategory(records){
+ const groups=[];
+ (records||[]).forEach(record=>{const name=muscleLabel(record.category);let group=groups.find(item=>item.name===name);if(!group){group={name,records:[]};groups.push(group);}group.records.push(record);});
+ return groups.length?groups.map(group=>{
+  const expanded=expandedRecordCategories.has(group.name);
+  return `<section class="record-group"><button class="card record-group-summary" data-record-category="${escapeHtml(group.name)}" type="button" aria-expanded="${expanded}"><span><b>${escapeHtml(group.name)}</b><small>${group.records.length} ${group.records.length===1?'ćwiczenie':'ćwiczeń'}</small></span><span class="chevron">${expanded?'⌃':'⌄'}</span></button>${expanded?`<div class="record-group-details">${group.records.map(record=>`<article class="card exercise-progress-card"><b>${escapeHtml(record.name)}</b><div class="exercise-progress-grid">${progressRecordLine('Ostatni trening · max powtórzeń',record.lastWorkout)}${progressRecordLine('Rekord powtórzeń · historia',record.repRecord)}${progressRecordLine('Największy ciężar · historia',record.weightRecord,true)}</div></article>`).join('')}</div>`:''}</section>`;
+ }).join(''):'<p class="empty compact">Brak zapisanych rekordów.</p>';
+}
 function exerciseAttempts(exercise){const name=normalizedText(exercise?.name);const category=normalizedText(exercise?.category);return workoutEntries().filter(entry=>normalizedText(entry.name)===name&&(!category||normalizedText(entry.category)===category)&&String(entry.workoutId)!==String(editingWorkoutId)).sort(compareRecord);}
 function exerciseRecord(name){return stats().records.find(r=>r.name===name);}
 function exerciseDetails(exercise){if(!exercise?.description&&!exercise?.imageUrl)return '<small>Brak opisu i zdjęcia tego ćwiczenia.</small>';return `${exercise.description?`<p>${escapeHtml(exercise.description)}</p>`:''}${exercise.imageUrl?`<img class="exercise-photo" src="${escapeHtml(exercise.imageUrl)}" alt="${escapeHtml(exercise.name||'Zdjęcie ćwiczenia')}" loading="lazy" referrerpolicy="no-referrer">`:''}`;}
