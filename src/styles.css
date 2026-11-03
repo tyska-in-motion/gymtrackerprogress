@@ -296,3 +296,17 @@ nav small { margin-top: 3px; }
 .exercise-picker-category summary small { color: var(--tw-muted); font-size: 12px; font-weight: 700; }
 .exercise-picker-options { display: grid; gap: 7px; border-top: 1px solid var(--tw-border); padding: 10px; }
 .exercise-picker-option { border: 0; border-radius: 12px; background: var(--tw-primary-soft); color: var(--tw-primary-dark); font-weight: 700; padding: 12px 14px; text-align: left; }
+
+
+/* Per-exercise progress records */
+.exercise-progress-card { display: grid; gap: 12px; margin-block: 8px; padding: 14px; }
+.exercise-progress-card > b { font-size: 15px; }
+.exercise-progress-grid { display: grid; gap: 8px; }
+.exercise-progress-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 3px 10px; border-top: 1px solid var(--tw-border); padding-top: 8px; }
+.exercise-progress-item > span { color: var(--tw-muted); font-size: 12px; font-weight: 800; }
+.exercise-progress-item > strong { font-size: 13px; text-align: right; white-space: nowrap; }
+.exercise-progress-item > small { color: var(--tw-muted); font-size: 11px; grid-column: 1 / -1; }
+@media (max-width: 360px) {
+ .exercise-progress-item { grid-template-columns: 1fr; }
+ .exercise-progress-item > strong { text-align: left; }
+}
