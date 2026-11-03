@@ -157,7 +157,7 @@ function recordHint(exercise){
  const weightRecord=[...attempts].sort((a,b)=>b.kg-a.kg||b.value-a.value)[0]||null;
  const latestDate=attempts.reduce((latest,attempt)=>String(attempt.date||'')>latest?String(attempt.date||''):latest,'');
  const latestAttempts=attempts.filter(attempt=>String(attempt.date||'')===latestDate);
- const lastWorkout=latestAttempts.sort((a,b)=>a.value-b.value||a.kg-b.kg).at(-1)||null;
+ const lastWorkout=latestAttempts.reduce((best,attempt)=>!best||attempt.value>best.value||(attempt.value===best.value&&attempt.kg>best.kg)?attempt:best,null);
  const catalogExercise=catalog.find(item=>item.name===exercise.name);
  const imageUrl=exercise.imageUrl||catalogExercise?.imageUrl;
  return `<div class="record-popover" role="region" aria-label="Trzy rekordy ćwiczenia">${progressRecordLine('Ostatni trening · maks. powtórzeń i największy ciężar przy tej liczbie',lastWorkout)}${progressRecordLine('Rekord powtórzeń · cała historia',repRecord)}${progressRecordLine('Największy ciężar · cała historia',weightRecord,true)}${imageUrl?`<img class="exercise-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(exercise.name||'Zdjęcie ćwiczenia')}" loading="lazy" referrerpolicy="no-referrer">`:''}</div>`;
