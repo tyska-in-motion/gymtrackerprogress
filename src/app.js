@@ -66,15 +66,15 @@ function sprite(){return `<svg class="icon-sprite" aria-hidden="true"><symbol id
 function normalizeData(value){const body=value&&typeof value==='object'?value:emptyData();return {workouts:Array.isArray(body.workouts)?body.workouts.map(normalizeWorkout):[],plans:body.plans&&typeof body.plans==='object'&&!Array.isArray(body.plans)?body.plans:{},draft:Array.isArray(body.draft)?body.draft.map(cloneExercise):[],templates:Array.isArray(body.templates)?body.templates.map(normalizeTemplate):[]};}
 function normalizeTemplate(template){return {...template,exercises:Array.isArray(template.exercises)?template.exercises.map(cloneTemplateExercise):[]};}
 function normalizeWorkout(workout){return {...workout,exercises:Array.isArray(workout.exercises)?workout.exercises.map(e=>({...e,sets:Array.isArray(e.sets)?e.sets.map(normalizeSet):[]})):[]};}
-function todayIso(){return new Date().toISOString().slice(0,10);}
+function todayIso(){return toIsoDate(new Date());}
 function parseIsoDate(date){return new Date(`${date}T00:00:00`);}
-function toIsoDate(date){const copy=new Date(date);copy.setHours(0,0,0,0);return copy.toISOString().slice(0,10);}
+function toIsoDate(date){const copy=new Date(date);return `${copy.getFullYear()}-${String(copy.getMonth()+1).padStart(2,'0')}-${String(copy.getDate()).padStart(2,'0')}`;}
 function addDays(date,days){const copy=new Date(date);copy.setDate(copy.getDate()+days);return copy;}
 function startOfWeek(date){const copy=new Date(date);const day=(copy.getDay()+6)%7;copy.setDate(copy.getDate()-day);copy.setHours(0,0,0,0);return copy;}
 function formatDate(date){if(!date)return 'Brak daty';return parseIsoDate(date).toLocaleDateString('pl-PL',{day:'numeric',month:'short',year:'numeric'});}
 function formatShortDate(date){return parseIsoDate(date).toLocaleDateString('pl-PL',{day:'numeric',month:'short'});}
 function weekdayName(date){return parseIsoDate(date).toLocaleDateString('pl-PL',{weekday:'short'}).replace('.', '');}
-function currentMonthPrefix(){return new Date().toISOString().slice(0,7);}
+function currentMonthPrefix(){return todayIso().slice(0,7);}
 function compareRecord(a,b){if(!a)return 1;if(a.metric==='seconds'||b.metric==='seconds'){const byTime=(+b.value||0)-(+a.value||0);if(byTime)return byTime;}const byKg=(+b.kg||0)-(+a.kg||0);if(byKg)return byKg;return (+b.value||0)-(+a.value||0);}
 function workoutEntries(){return data.workouts.flatMap(w=>(w.exercises||[]).flatMap(e=>(e.sets||[]).map(s=>({name:e.name,category:e.category||'Bez kategorii',kg:+s.kg||0,value:setMetricValue(s),metric:setMetricType(s),date:w.date,workoutId:w.id}))));}
 function daysSinceLastWorkout(){const dates=data.workouts.map(w=>w.date).filter(Boolean).sort().reverse();if(!dates.length)return '--';return Math.max(0,Math.floor((parseIsoDate(todayIso())-parseIsoDate(dates[0]))/86400000));}
