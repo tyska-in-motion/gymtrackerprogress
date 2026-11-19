@@ -373,3 +373,5 @@ nav small { margin-top: 3px; }
 .manager-archive { display:grid; gap:5px; margin:8px 0; }
 .manager-archive small { color:var(--tw-muted); }
 .manager-archive-button { margin-top:20px; }
+
+.plan-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.plan-heading h1{margin:0}.history-open{width:auto;white-space:nowrap;padding:10px 14px}.history-sheet{max-height:90vh}.manager-draft-units{display:grid;gap:7px;margin-top:10px}.manager-draft-unit{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--tw-border);border-radius:14px;background:var(--tw-surface)}.manager-completion-backdrop{z-index:40}.manager-completion-sheet{max-height:82vh}.manager-completion-actions{display:grid;gap:9px;margin:16px 0}.manager-completion-actions button{width:100%}.manager-add{display:grid;gap:12px}
